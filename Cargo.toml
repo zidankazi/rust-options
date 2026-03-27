@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "crates/pricer",
+    "crates/market-data",
+    "crates/risk",
+    "crates/strategy",
+    "crates/web",
+]
+resolver = "2"

@@ -1,0 +1,7 @@
+[package]
+name = "market-data"
+version = "0.1.0"
+edition = "2021"
+description = "Real-time and historical market data ingestion"
+
+[dependencies]

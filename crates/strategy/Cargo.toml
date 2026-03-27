@@ -1,0 +1,7 @@
+[package]
+name = "strategy"
+version = "0.1.0"
+edition = "2021"
+description = "Trade strategies, backtesting engine, and PnL tracking"
+
+[dependencies]
