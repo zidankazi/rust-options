@@ -34,11 +34,11 @@ rust-options/
 ### pricer
 - [x] Project scaffolding & types
 - [x] Normal CDF/PDF (Abramowitz & Stegun)
-- [ ] xorshift64 PRNG + Box-Muller
+- [x] xorshift64 PRNG + Box-Muller
 - [x] Black-Scholes pricing (European, Merton extension)
 - [x] Analytical Greeks (delta, gamma, theta, vega, rho)
-- [ ] Implied volatility solver (Newton-Raphson + bisection)
-- [ ] Monte Carlo engine (GBM, antithetic variates)
+- [x] Implied volatility solver (Newton-Raphson + bisection)
+- [x] Monte Carlo engine (GBM, antithetic variates)
 - [ ] Binomial tree (CRR, American options)
 - [ ] Benchmarks
 - [ ] Full test suite
