@@ -117,6 +117,134 @@ pub async fn price(
         .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))
 }
 
+// --- /api/benchmark?n=1000000 ---
+
+#[derive(Deserialize)]
+pub struct BenchmarkQuery {
+    n: Option<usize>,
+}
+
+#[derive(Serialize)]
+pub struct BenchmarkResult {
+    iterations: usize,
+    total_ns: u64,
+    per_call_ns: f64,
+    calls_per_second: f64,
+    python_estimate_ms: f64,
+}
+
+pub async fn benchmark(
+    Query(params): Query<BenchmarkQuery>,
+) -> Json<BenchmarkResult> {
+    let n = params.n.unwrap_or(1_000_000).min(10_000_000);
+
+    let contract = pricer::OptionContract {
+        s: 100.0,
+        k: 100.0,
+        t: 1.0,
+        r: 0.05,
+        sigma: 0.2,
+        option_type: pricer::OptionType::Call,
+        exercise_style: pricer::ExerciseStyle::European,
+        q: None,
+    };
+
+    let start = std::time::Instant::now();
+    for _ in 0..n {
+        let _ = std::hint::black_box(
+            pricer::black_scholes::black_scholes(std::hint::black_box(&contract))
+        );
+    }
+    let elapsed = start.elapsed();
+    let total_ns = elapsed.as_nanos() as u64;
+    let per_call_ns = total_ns as f64 / n as f64;
+    let calls_per_second = 1_000_000_000.0 / per_call_ns;
+    // Python scipy.stats.norm BS: ~20μs per call conservatively
+    let python_estimate_ms = n as f64 * 20.0 / 1_000.0;
+
+    Json(BenchmarkResult {
+        iterations: n,
+        total_ns,
+        per_call_ns,
+        calls_per_second,
+        python_estimate_ms,
+    })
+}
+
+// --- /api/vol-surface?symbol=AAPL ---
+
+#[derive(Serialize)]
+pub struct VolSurfacePoint {
+    strike: f64,
+    expiry_days: f64,
+    iv: f64,
+}
+
+#[derive(Serialize)]
+pub struct VolSurfaceResponse {
+    symbol: String,
+    spot_price: f64,
+    points: Vec<VolSurfacePoint>,
+}
+
+pub async fn vol_surface(
+    State(state): State<Arc<AppState>>,
+    Query(params): Query<SymbolQuery>,
+) -> Result<Json<VolSurfaceResponse>, (StatusCode, String)> {
+    let client = get_client(&state).await?;
+    let (spot, expirations) = client
+        .get_expirations(&params.symbol)
+        .await
+        .map_err(|e| (StatusCode::BAD_GATEWAY, e.to_string()))?;
+
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+
+    // Fetch up to 8 near-term expirations in parallel
+    let future_exps: Vec<i64> = expirations.into_iter()
+        .filter(|&e| e > now + 86400)
+        .take(8)
+        .collect();
+
+    let r = 0.0425;
+    let futures: Vec<_> = future_exps.iter()
+        .map(|&exp| {
+            let client = client.clone();
+            let symbol = params.symbol.clone();
+            tokio::spawn(async move {
+                client.get_chain_for_expiry(&symbol, exp, spot, r).await
+            })
+        })
+        .collect();
+
+    let mut points = Vec::new();
+    for future in futures {
+        if let Ok(Ok(entries)) = future.await {
+            for entry in entries {
+                if let Some(iv) = entry.implied_volatility {
+                    // Filter to reasonable IV and near-the-money
+                    let pct = (entry.strike - spot).abs() / spot;
+                    if iv > 0.01 && iv < 3.0 && pct < 0.30 {
+                        points.push(VolSurfacePoint {
+                            strike: entry.strike,
+                            expiry_days: entry.time_to_expiry * 365.0,
+                            iv: iv * 100.0, // as percentage
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(Json(VolSurfaceResponse {
+        symbol: params.symbol,
+        spot_price: spot,
+        points,
+    }))
+}
+
 // --- /api/quotes?symbols=AAPL,MSFT,GOOGL ---
 
 #[derive(Deserialize)]

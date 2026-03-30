@@ -38,6 +38,26 @@ export interface StockQuote {
   change_percent: number;
 }
 
+export interface BenchmarkResult {
+  iterations: number;
+  total_ns: number;
+  per_call_ns: number;
+  calls_per_second: number;
+  python_estimate_ms: number;
+}
+
+export interface VolSurfacePoint {
+  strike: number;
+  expiry_days: number;
+  iv: number;
+}
+
+export interface VolSurfaceResponse {
+  symbol: string;
+  spot_price: number;
+  points: VolSurfacePoint[];
+}
+
 export interface ExpirationsResponse {
   symbol: string;
   spot_price: number;

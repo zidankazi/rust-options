@@ -22,6 +22,7 @@ let chartState: {
   padding: { top: number; right: number; bottom: number; left: number };
   params: CalcParams;
   result: PricingResult;
+  imageData: ImageData | null;
 } | null = null;
 
 export function initCalculator(): void {
@@ -150,8 +151,8 @@ function renderPayoff(params: CalcParams, result: PricingResult): void {
   const yRange = maxY - minY || 1;
   const yPad = yRange * 0.15;
 
-  // Save state for hover
-  chartState = { points, low, high, minY, yRange, yPad, padding, params, result };
+  // Save state for hover (imageData set after drawing)
+  chartState = { points, low, high, minY, yRange, yPad, padding, params, result, imageData: null };
 
   const scaleX = (x: number) => padding.left + ((x - low) / (high - low)) * plotW;
   const scaleY = (y: number) => padding.top + plotH - ((y - (minY - yPad)) / (yRange + 2 * yPad)) * plotH;
@@ -280,15 +281,22 @@ function renderPayoff(params: CalcParams, result: PricingResult): void {
   // Spot label
   ctx.fillStyle = '#D97757';
   ctx.fillText(`Spot $${params.s}`, spotX, padding.top - 8);
+
+  // Save rendered chart for hover overlay
+  if (chartState) {
+    chartState.imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  }
 }
 
 // --- Hover crosshair ---
 
 function onChartHover(e: MouseEvent): void {
-  if (!chartState) return;
+  if (!chartState || !chartState.imageData) return;
 
   const canvas = e.target as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
   const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
 
@@ -313,11 +321,8 @@ function onChartHover(e: MouseEvent): void {
   const scaleY = (y: number) => padding.top + plotH - ((y - (minY - yPad)) / (yRange + 2 * yPad)) * plotH;
   const py = scaleY(payoff);
 
-  // Redraw chart then overlay crosshair
-  renderPayoff(params, result);
-
-  const ctx = canvas.getContext('2d')!;
-  const dpr = window.devicePixelRatio || 1;
+  // Restore clean chart, then draw crosshair on top
+  ctx.putImageData(chartState.imageData, 0, 0);
   ctx.save();
   ctx.scale(dpr, dpr);
 
@@ -349,16 +354,13 @@ function onChartHover(e: MouseEvent): void {
   let pillX = mx - pillW / 2;
   const pillY = py - pillH - 12;
 
-  // Clamp to chart bounds
   pillX = Math.max(padding.left, Math.min(pillX, w - padding.right - pillW));
 
-  // Pill background
   ctx.fillStyle = '#1F1F1F';
   ctx.beginPath();
   ctx.roundRect(pillX, pillY, pillW, pillH, 6);
   ctx.fill();
 
-  // Pill text
   ctx.fillStyle = '#FAF6F0';
   ctx.textAlign = 'center';
   ctx.fillText(label, pillX + pillW / 2, pillY + pillH / 2 + 4);
@@ -367,6 +369,8 @@ function onChartHover(e: MouseEvent): void {
 }
 
 function onChartLeave(): void {
-  if (!chartState) return;
-  renderPayoff(chartState.params, chartState.result);
+  if (!chartState || !chartState.imageData) return;
+  const canvas = $('payoff-chart') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  ctx.putImageData(chartState.imageData, 0, 0);
 }

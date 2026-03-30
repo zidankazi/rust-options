@@ -647,6 +647,22 @@ tr.itm:hover {
     transition: border-color var(--transition), box-shadow var(--transition);
 }
 
+.input-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 100%;
+    cursor: pointer;
+    background: var(--bg-card);
+    border-left: 1px solid var(--border-light);
+    border-radius: 0 7px 7px 0;
+    opacity: 1;
+    position: relative;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='14' viewBox='0 0 10 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 2L8 5.5H2L5 2Z' fill='%23888'/%3E%3Cpath d='M5 12L2 8.5H8L5 12Z' fill='%23888'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .input-group input:focus, .input-group select:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-light);
@@ -681,6 +697,131 @@ tr.itm:hover {
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.01em;
+}
+
+/* ============================================
+   HOME PAGE
+   ============================================ */
+
+.hero {
+    margin-bottom: 36px;
+}
+
+.hero-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    margin-bottom: 12px;
+}
+
+.hero-tagline {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 640px;
+}
+
+.home-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.home-feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.home-feature-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.home-feature-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--accent-light);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.home-feature-icon svg {
+    width: 18px;
+    height: 18px;
+    color: var(--accent);
+}
+
+.home-feature-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.home-feature-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.home-bench-table table {
+    width: 100%;
+}
+
+.speedup-badge {
+    display: inline-block;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.arch-diagram {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    overflow-x: auto;
+}
+
+.principles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.principle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.principle h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.principle p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
 }
 
 /* ============================================
@@ -813,6 +954,96 @@ tr.itm:hover {
     justify-content: center;
 }
 
+/* ============================================
+   BENCHMARK
+   ============================================ */
+
+.benchmark-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.bench-comparison {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.bench-bar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bench-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.bench-lang {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.bench-time {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.bench-bar-track {
+    height: 32px;
+    background: var(--bg-primary);
+    border-radius: 6px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+}
+
+.bench-bar {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 800ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rust-bar {
+    background: linear-gradient(90deg, var(--accent), #E8A882);
+    min-width: 3px;
+}
+
+.python-bar {
+    background: linear-gradient(90deg, #888, #AAA);
+}
+
+.bench-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.bench-speedup {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--border-light);
+}
+
+.bench-speedup-number {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.03em;
+}
+
+.bench-speedup-label {
+    font-size: 16px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
 .strike-filter-btn {
     background: none;
     border: none;
@@ -829,19 +1060,238 @@ tr.itm:hover {
 }
 
 /* ============================================
+   STRATEGY BUILDER
+   ============================================ */
+
+.preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.preset-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: all var(--transition);
+}
+
+.preset-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+}
+
+.preset-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.preset-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.dir-toggle, .type-toggle {
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-primary);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.dir-toggle.positive {
+    color: var(--green);
+    border-color: var(--green);
+    background: var(--green-bg);
+}
+
+.dir-toggle.negative {
+    color: var(--red);
+    border-color: var(--red);
+    background: var(--red-bg);
+}
+
+.type-toggle:hover {
+    border-color: var(--accent);
+}
+
+.leg-strike, .leg-qty {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-input);
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text-primary);
+    text-align: right;
+    outline: none;
+}
+
+.leg-strike::-webkit-inner-spin-button,
+.leg-qty::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 100%;
+    cursor: pointer;
+    background: var(--bg-card);
+    border-left: 1px solid var(--border-light);
+    border-radius: 0 5px 5px 0;
+    opacity: 1;
+    background-image: url("data:image/svg+xml,%3Csvg width='8' height='12' viewBox='0 0 8 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 1.5L6.5 4.5H1.5L4 1.5Z' fill='%23888'/%3E%3Cpath d='M4 10.5L1.5 7.5H6.5L4 10.5Z' fill='%23888'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.leg-strike:focus, .leg-qty:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+.remove-leg {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all var(--transition);
+}
+
+.remove-leg:hover {
+    color: var(--red);
+    background: var(--red-bg);
+}
+
+.net-cost {
+    color: var(--text-primary);
+}
+
+/* ============================================
    PAGE VIEWS
    ============================================ */
 
 .page { display: none; }
 .page.active {
     display: block;
-    animation: pageIn 200ms ease;
+    animation: pageIn 300ms ease;
 }
 
 @keyframes pageIn {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes fadeScale {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeLeft {
+    from { opacity: 0; transform: translateX(-14px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeRight {
+    from { opacity: 0; transform: translateX(14px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeDrop {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* --- Home: dramatic entrance --- */
+
+#page-home.active .hero { animation: fadeLeft 500ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+#page-home.active .home-feature-card:nth-child(1) { animation: fadeScale 400ms ease 120ms both; }
+#page-home.active .home-feature-card:nth-child(2) { animation: fadeScale 400ms ease 200ms both; }
+#page-home.active .home-feature-card:nth-child(3) { animation: fadeScale 400ms ease 280ms both; }
+#page-home.active .section-title { animation: fadeUp 350ms ease 100ms both; }
+#page-home.active .home-bench-table { animation: fadeUp 400ms ease 180ms both; }
+#page-home.active .benchmark-controls { animation: fadeUp 350ms ease 220ms both; }
+#page-home.active .arch-diagram { animation: fadeScale 400ms ease 150ms both; }
+#page-home.active .principles-grid .principle:nth-child(1) { animation: fadeLeft 350ms ease 120ms both; }
+#page-home.active .principles-grid .principle:nth-child(2) { animation: fadeRight 350ms ease 160ms both; }
+#page-home.active .principles-grid .principle:nth-child(3) { animation: fadeLeft 350ms ease 200ms both; }
+#page-home.active .principles-grid .principle:nth-child(4) { animation: fadeRight 350ms ease 240ms both; }
+
+/* --- Options: cascade down --- */
+
+#page-chain.active .page-title { animation: fadeDrop 300ms ease both; }
+#page-chain.active .page-subtitle { animation: fadeDrop 300ms ease 40ms both; }
+#page-chain.active .search-bar { animation: fadeUp 300ms ease 80ms both; }
+#page-chain.active .stat-card:nth-child(1) { animation: fadeScale 250ms ease 60ms both; }
+#page-chain.active .stat-card:nth-child(2) { animation: fadeScale 250ms ease 120ms both; }
+#page-chain.active .stat-card:nth-child(3) { animation: fadeScale 250ms ease 180ms both; }
+#page-chain.active .index-card:nth-child(1) { animation: fadeUp 300ms ease 80ms both; }
+#page-chain.active .index-card:nth-child(2) { animation: fadeUp 300ms ease 140ms both; }
+#page-chain.active .index-card:nth-child(3) { animation: fadeUp 300ms ease 200ms both; }
+#page-chain.active .index-card:nth-child(4) { animation: fadeUp 300ms ease 260ms both; }
+#page-chain.active .sector-section:nth-child(2) { animation: fadeUp 300ms ease 120ms both; }
+#page-chain.active .sector-section:nth-child(3) { animation: fadeUp 300ms ease 180ms both; }
+#page-chain.active .sector-section:nth-child(4) { animation: fadeUp 300ms ease 240ms both; }
+#page-chain.active .sector-section:nth-child(5) { animation: fadeUp 300ms ease 300ms both; }
+
+/* --- Pricer: slide in from sides --- */
+
+#page-calculator.active .page-title { animation: fadeLeft 300ms ease both; }
+#page-calculator.active .page-subtitle { animation: fadeLeft 300ms ease 40ms both; }
+#page-calculator.active .card { animation: fadeScale 400ms ease 80ms both; }
+#page-calculator.active .stat-card { animation: fadeUp 300ms ease 120ms both; }
+#page-calculator.active .greeks-grid .greek-card:nth-child(1) { animation: fadeScale 200ms ease 100ms both; }
+#page-calculator.active .greeks-grid .greek-card:nth-child(2) { animation: fadeScale 200ms ease 140ms both; }
+#page-calculator.active .greeks-grid .greek-card:nth-child(3) { animation: fadeScale 200ms ease 180ms both; }
+#page-calculator.active .greeks-grid .greek-card:nth-child(4) { animation: fadeScale 200ms ease 220ms both; }
+#page-calculator.active .greeks-grid .greek-card:nth-child(5) { animation: fadeScale 200ms ease 260ms both; }
+#page-calculator.active #payoff-card { animation: fadeUp 400ms ease 160ms both; }
+
+/* --- Strategies: grid pop-in --- */
+
+#page-strategy.active .page-title { animation: fadeRight 300ms ease both; }
+#page-strategy.active .page-subtitle { animation: fadeRight 300ms ease 40ms both; }
+#page-strategy.active .card { animation: fadeUp 350ms ease 80ms both; }
+#page-strategy.active .preset-btn:nth-child(1) { animation: scaleIn 250ms ease 100ms both; }
+#page-strategy.active .preset-btn:nth-child(2) { animation: scaleIn 250ms ease 140ms both; }
+#page-strategy.active .preset-btn:nth-child(3) { animation: scaleIn 250ms ease 180ms both; }
+#page-strategy.active .preset-btn:nth-child(4) { animation: scaleIn 250ms ease 220ms both; }
+#page-strategy.active .preset-btn:nth-child(5) { animation: scaleIn 250ms ease 260ms both; }
+#page-strategy.active .preset-btn:nth-child(6) { animation: scaleIn 250ms ease 300ms both; }
+#page-strategy.active .preset-btn:nth-child(7) { animation: scaleIn 250ms ease 340ms both; }
+#page-strategy.active .preset-btn:nth-child(8) { animation: scaleIn 250ms ease 380ms both; }
+
+/* --- Portfolio / Backtest: simple fade --- */
+
+#page-portfolio.active .page-title,
+#page-backtest.active .page-title { animation: fadeDrop 300ms ease both; }
+#page-portfolio.active .empty-state,
+#page-backtest.active .empty-state { animation: fadeScale 400ms ease 100ms both; }
 
 /* ============================================
    RESPONSIVE

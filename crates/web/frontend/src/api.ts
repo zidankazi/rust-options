@@ -1,4 +1,4 @@
-import type { ExpirationsResponse, ChainResponse, PricingResult, StockQuote, SparklineData } from './types';
+import type { ExpirationsResponse, ChainResponse, PricingResult, StockQuote, SparklineData, BenchmarkResult, VolSurfaceResponse } from './types';
 
 export async function fetchExpirations(symbol: string): Promise<ExpirationsResponse> {
   const resp = await fetch(`/api/expirations?symbol=${symbol}`);
@@ -30,6 +30,18 @@ export async function fetchPrice(params: {
 
 export async function fetchQuotes(symbols: string[]): Promise<StockQuote[]> {
   const resp = await fetch(`/api/quotes?symbols=${symbols.join(',')}`);
+  if (!resp.ok) throw new Error(await resp.text());
+  return resp.json();
+}
+
+export async function fetchBenchmark(n: number): Promise<BenchmarkResult> {
+  const resp = await fetch(`/api/benchmark?n=${n}`);
+  if (!resp.ok) throw new Error(await resp.text());
+  return resp.json();
+}
+
+export async function fetchVolSurface(symbol: string): Promise<VolSurfaceResponse> {
+  const resp = await fetch(`/api/vol-surface?symbol=${symbol}`);
   if (!resp.ok) throw new Error(await resp.text());
   return resp.json();
 }

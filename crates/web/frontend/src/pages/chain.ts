@@ -1,6 +1,8 @@
-import { fetchExpirations, fetchChain, fetchQuotes, fetchSparklines } from '../api';
+import { fetchExpirations, fetchChain, fetchQuotes, fetchSparklines, fetchVolSurface } from '../api';
 import type { OptionChainEntry, StockQuote, SparklineData } from '../types';
 import { $, formatNum, showLoading } from '../utils';
+
+declare const Plotly: any;
 
 let currentSymbol = '';
 let currentSpot = 0;
@@ -31,6 +33,7 @@ function goHome(): void {
   currentSymbol = '';
   ($('symbol-input') as HTMLInputElement).value = '';
   $('back-btn').style.display = 'none';
+  $('vol-surface-section').style.display = 'none';
   showLanding();
 }
 
@@ -168,10 +171,16 @@ function drawSparkline(data: SparklineData): void {
   ) as HTMLCanvasElement | null;
   if (!canvas || data.prices.length < 2) return;
 
-  const ctx = canvas.getContext('2d')!;
-  const dpr = window.devicePixelRatio || 1;
+  // Wait for layout if canvas isn't sized yet
   const w = canvas.clientWidth;
   const h = canvas.clientHeight;
+  if (w === 0 || h === 0) {
+    requestAnimationFrame(() => drawSparkline(data));
+    return;
+  }
+
+  const ctx = canvas.getContext('2d')!;
+  const dpr = window.devicePixelRatio || 1;
   canvas.width = w * dpr;
   canvas.height = h * dpr;
   ctx.scale(dpr, dpr);
@@ -221,6 +230,7 @@ function searchSymbol(): void {
 async function loadChain(): Promise<void> {
   $('chain-stats').style.display = 'none';
   $('expiry-tabs').style.display = 'none';
+  $('vol-surface-section').style.display = 'none';
   showLoading('chain-content');
 
   try {
@@ -228,12 +238,118 @@ async function loadChain(): Promise<void> {
     renderStats(data.spot_price, data.expirations.length);
     renderExpiryDropdown(data.expirations);
 
+    // Show vol surface section and wire button
+    $('vol-surface-section').style.display = 'block';
+    $('vol-surface-container').innerHTML = '<div class="empty-state" style="padding: 40px;"><p>Click "Load Surface" to compute implied volatility across all strikes and expirations.</p></div>';
+    $('load-vol-surface').onclick = () => loadVolSurface();
+
     const now = Date.now() / 1000;
     const nextExpiry = data.expirations.find(e => e > now + 86400) || data.expirations[0];
     await loadExpiry(nextExpiry);
   } catch (err) {
     $('chain-content').innerHTML =
       `<div class="empty-state"><h3>Error</h3><p>${(err as Error).message}</p></div>`;
+  }
+}
+
+async function loadVolSurface(): Promise<void> {
+  const container = $('vol-surface-container');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div>Computing IV surface across all strikes and expirations...</div>';
+
+  try {
+    const data = await fetchVolSurface(currentSymbol);
+    if (data.points.length === 0) {
+      container.innerHTML = '<div class="empty-state"><p>Not enough data to build surface.</p></div>';
+      return;
+    }
+
+    // Build grid data for Plotly
+    // Group by expiry, then by strike
+    const expirySet = [...new Set(data.points.map(p => p.expiry_days))].sort((a, b) => a - b);
+    const strikeSet = [...new Set(data.points.map(p => p.strike))].sort((a, b) => a - b);
+
+    const ivMap = new Map<string, number>();
+    for (const p of data.points) {
+      ivMap.set(`${p.strike}_${p.expiry_days}`, p.iv);
+    }
+
+    // Build Z matrix (IV values) with interpolation for missing points
+    const z: (number | null)[][] = [];
+    for (const exp of expirySet) {
+      const row: (number | null)[] = [];
+      for (const strike of strikeSet) {
+        const val = ivMap.get(`${strike}_${exp}`);
+        row.push(val !== undefined ? val : null);
+      }
+      z.push(row);
+    }
+
+    const trace = {
+      type: 'surface',
+      x: strikeSet,
+      y: expirySet,
+      z: z,
+      colorscale: [
+        [0, '#8BA88A'],
+        [0.25, '#B8C9A3'],
+        [0.5, '#F0E9DF'],
+        [0.75, '#E8A882'],
+        [1, '#D97757'],
+      ],
+      colorbar: {
+        title: { text: 'IV %', font: { size: 12, color: '#555' } },
+        tickfont: { size: 11, color: '#888' },
+        thickness: 15,
+        len: 0.6,
+      },
+      hovertemplate:
+        'Strike: $%{x:.0f}<br>' +
+        'Expiry: %{y:.0f} days<br>' +
+        'IV: %{z:.1f}%<extra></extra>',
+      contours: {
+        z: { show: true, usecolormap: true, highlightcolor: '#fff', project: { z: false } }
+      },
+      lighting: { ambient: 0.7, diffuse: 0.5, specular: 0.2, roughness: 0.5 },
+      opacity: 0.95,
+    };
+
+    const layout = {
+      scene: {
+        xaxis: {
+          title: { text: 'Strike Price', font: { size: 12, color: '#555' } },
+          tickfont: { size: 10, color: '#888' },
+          gridcolor: '#E5D9C8',
+          zerolinecolor: '#E5D9C8',
+        },
+        yaxis: {
+          title: { text: 'Days to Expiry', font: { size: 12, color: '#555' } },
+          tickfont: { size: 10, color: '#888' },
+          gridcolor: '#E5D9C8',
+          zerolinecolor: '#E5D9C8',
+        },
+        zaxis: {
+          title: { text: 'IV %', font: { size: 12, color: '#555' } },
+          tickfont: { size: 10, color: '#888' },
+          gridcolor: '#E5D9C8',
+          zerolinecolor: '#E5D9C8',
+        },
+        bgcolor: '#FAF6F0',
+        camera: { eye: { x: 1.8, y: -1.8, z: 1.2 } },
+      },
+      paper_bgcolor: '#FAF6F0',
+      margin: { l: 0, r: 0, t: 0, b: 0 },
+      font: { family: 'Inter, sans-serif' },
+    };
+
+    const config = {
+      responsive: true,
+      displaylogo: false,
+      modeBarButtonsToRemove: ['toImage', 'sendDataToCloud'],
+    };
+
+    Plotly.newPlot(container, [trace], layout, config);
+  } catch (err) {
+    container.innerHTML = `<div class="empty-state"><p>Error: ${(err as Error).message}</p></div>`;
   }
 }
 

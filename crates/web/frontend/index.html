@@ -8,14 +8,17 @@
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
         <nav class="sidebar">
             <div class="sidebar-logo">
                 <h1>rust-options</h1>
                 <span>derivatives engine</span>
             </div>
             <div class="sidebar-nav">
-                <button class="nav-item active" data-page="chain">
+                <button class="nav-item" data-page="home">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item" data-page="chain">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
                     <span>Option Chain</span>
                 </button>
@@ -23,7 +26,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     <span>Pricer</span>
                 </button>
-                <button class="nav-item disabled" data-page="strategy">
+                <button class="nav-item" data-page="strategy">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                     <span>Strategies</span>
                 </button>
@@ -38,9 +41,141 @@
             </div>
         </nav>
 
-        <!-- Main Content -->
         <main class="main">
-            <div id="page-chain" class="page active">
+
+            <!-- HOME -->
+            <div id="page-home" class="page">
+                <div class="hero">
+                    <h1 class="hero-title">rust-options</h1>
+                    <p class="hero-tagline">A blazing-fast equity derivatives pricing engine. Sub-microsecond Black-Scholes, parallel Monte Carlo, analytical Greeks, and binomial trees for American options. All math from scratch, zero external math dependencies.</p>
+                </div>
+
+                <div class="home-grid">
+                    <div class="home-feature-card" onclick="window.dispatchEvent(new CustomEvent('navigate', {detail: '/options'}))">
+                        <div class="home-feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                        </div>
+                        <h3>Live Option Chains</h3>
+                        <p>Real-time options data from Yahoo Finance with implied volatility and Greeks computed by our engine.</p>
+                    </div>
+                    <div class="home-feature-card" onclick="window.dispatchEvent(new CustomEvent('navigate', {detail: '/pricer'}))">
+                        <div class="home-feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
+                        <h3>Options Pricer</h3>
+                        <p>Black-Scholes calculator with all five Greeks, interactive payoff diagrams, and hover inspection.</p>
+                    </div>
+                    <div class="home-feature-card" onclick="window.dispatchEvent(new CustomEvent('navigate', {detail: '/strategies'}))">
+                        <div class="home-feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        </div>
+                        <h3>Strategy Builder</h3>
+                        <p>Build multi-leg strategies with preset templates. Combined payoff curves, net Greeks, and risk analysis.</p>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top: 40px;">Performance</div>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; max-width: 600px;">
+                    Same formulas, same inputs. The only difference is the language. Run the benchmark yourself and watch the bars.
+                </p>
+
+                <div class="card" style="margin-bottom: 24px;">
+                    <div class="home-bench-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left;">Operation</th>
+                                    <th>Python</th>
+                                    <th>Rust</th>
+                                    <th>Speedup</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="text-align: left; font-weight: 500;">Black-Scholes + Greeks</td>
+                                    <td class="muted">~10-50μs</td>
+                                    <td style="font-weight: 600;">~19ns</td>
+                                    <td><span class="speedup-badge">~2,000x</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: left; font-weight: 500;">Implied Volatility Solve</td>
+                                    <td class="muted">~100-500μs</td>
+                                    <td style="font-weight: 600;">~50ns</td>
+                                    <td><span class="speedup-badge">~5,000x</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: left; font-weight: 500;">Monte Carlo 100K paths</td>
+                                    <td class="muted">~5-15s</td>
+                                    <td style="font-weight: 600;">~600μs</td>
+                                    <td><span class="speedup-badge">~16,000x</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: left; font-weight: 500;">Binomial Tree 200 steps</td>
+                                    <td class="muted">~1-5ms</td>
+                                    <td style="font-weight: 600;">~11μs</td>
+                                    <td><span class="speedup-badge">~200x</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: left; font-weight: 500;">Vol Surface (500 calls)</td>
+                                    <td class="muted">~5-25ms</td>
+                                    <td style="font-weight: 600;">~10μs</td>
+                                    <td><span class="speedup-badge">~1,500x</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section-title">Live Benchmark</div>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px; max-width: 600px;">
+                    Click a button to run millions of Black-Scholes calculations on the Rust engine. Watch how long it takes, then see how long Python would need for the same work.
+                </p>
+
+                <div class="card">
+                    <div class="benchmark-controls">
+                        <button class="btn btn-secondary" id="bench-1m">Price 1M options</button>
+                        <button class="btn btn-secondary" id="bench-5m">5M options</button>
+                        <button class="btn btn-secondary" id="bench-10m">10M options</button>
+                    </div>
+                    <div id="benchmark-result" style="display: none;"></div>
+                </div>
+
+                <div class="section-title" style="margin-top: 40px;">Architecture</div>
+                <div class="card">
+                    <pre class="arch-diagram">rust-options/
+├── crates/
+│   ├── pricer/        BS, MC, binomial, IV solver, Greeks (pure math, zero deps)
+│   ├── market-data/   Yahoo Finance client, live option chains + quotes
+│   ├── risk/          Portfolio risk analytics (planned)
+│   ├── strategy/      Trade strategies & backtesting (planned)
+│   └── web/
+│       ├── src/       Axum REST API serving market data + pricer
+│       └── frontend/  TypeScript + Vite</pre>
+                </div>
+
+                <div class="section-title" style="margin-top: 40px;">Design Principles</div>
+                <div class="principles-grid">
+                    <div class="principle">
+                        <h4>Speed is a feature</h4>
+                        <p>Sub-microsecond pricing, zero allocations in hot paths. The math is never the bottleneck.</p>
+                    </div>
+                    <div class="principle">
+                        <h4>No unnecessary dependencies</h4>
+                        <p>Normal CDF, PRNG, and RNG implemented from scratch for WASM portability.</p>
+                    </div>
+                    <div class="principle">
+                        <h4>Pure math in the pricer</h4>
+                        <p>No IO, no async, no side effects. Inputs in, prices out.</p>
+                    </div>
+                    <div class="principle">
+                        <h4>Correct first, then fast</h4>
+                        <p>Validated against known analytical results before optimizing.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPTION CHAIN -->
+            <div id="page-chain" class="page">
                 <h1 class="page-title">Option Chain</h1>
                 <p class="page-subtitle">Live options data with implied volatility and Greeks</p>
 
@@ -58,8 +193,18 @@
                         <p>Enter a stock symbol above to view its full option chain with implied volatility and Greeks computed in real time.</p>
                     </div>
                 </div>
+                <div id="vol-surface-section" style="display: none; margin-top: 24px;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Implied Volatility Surface</div>
+                            <button class="btn btn-secondary" id="load-vol-surface" style="font-size: 13px; padding: 6px 14px;">Load Surface</button>
+                        </div>
+                        <div id="vol-surface-container" style="height: 500px;"></div>
+                    </div>
+                </div>
             </div>
 
+            <!-- PRICER -->
             <div id="page-calculator" class="page">
                 <h1 class="page-title">Options Pricer</h1>
                 <p class="page-subtitle">Black-Scholes pricing with analytical Greeks</p>
@@ -115,15 +260,10 @@
                 </div>
             </div>
 
-            <div id="page-strategy" class="page">
-                <h1 class="page-title">Strategy Builder</h1>
-                <p class="page-subtitle">Build and analyze multi-leg option strategies</p>
-                <div class="empty-state">
-                    <h3>Coming soon</h3>
-                    <p>Build spreads, straddles, and iron condors with combined payoff diagrams and net Greeks.</p>
-                </div>
-            </div>
+            <!-- STRATEGY -->
+            <div id="page-strategy" class="page"></div>
 
+            <!-- PORTFOLIO -->
             <div id="page-portfolio" class="page">
                 <h1 class="page-title">Portfolio</h1>
                 <p class="page-subtitle">Track positions and portfolio-level risk</p>
@@ -133,6 +273,7 @@
                 </div>
             </div>
 
+            <!-- BACKTEST -->
             <div id="page-backtest" class="page">
                 <h1 class="page-title">Backtesting</h1>
                 <p class="page-subtitle">Test strategies against historical data</p>
@@ -144,6 +285,7 @@
         </main>
     </div>
 
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
     <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
