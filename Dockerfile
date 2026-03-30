@@ -7,12 +7,18 @@ COPY crates/web/frontend/ ./
 RUN npm run build
 
 # Stage 2: Build Rust backend
-FROM rust:1.83-slim AS backend
+FROM rust:1-slim AS backend
 WORKDIR /app
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
-COPY Cargo.toml Cargo.lock* ./
-COPY crates/ crates/
-# Copy built frontend into static dir
+COPY Cargo.toml Cargo.lock ./
+COPY crates/pricer/ crates/pricer/
+COPY crates/market-data/ crates/market-data/
+COPY crates/risk/ crates/risk/
+COPY crates/strategy/ crates/strategy/
+COPY crates/web/Cargo.toml crates/web/Cargo.toml
+COPY crates/web/src/ crates/web/src/
+# Need a stub lib.rs for workspace to compile
+RUN mkdir -p crates/web/static
 COPY --from=frontend /app/crates/web/static crates/web/static/
 RUN cargo build --release -p web
 
