@@ -133,6 +133,16 @@ body {
     color: var(--accent);
 }
 
+.nav-item.disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.nav-item.disabled:hover {
+    background: none;
+    color: var(--text-secondary);
+}
+
 .nav-item svg {
     width: 18px;
     height: 18px;
