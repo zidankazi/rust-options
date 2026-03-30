@@ -3,6 +3,7 @@
     
 /// Standard normal probability density function.
 /// n(x) = (1/sqrt(2*pi)) * exp(-x^2/2)
+#[inline]
 pub fn norm_pdf(x: f64) -> f64 {
     const INV_SQRT_2PI: f64 = 0.398_942_280_401_432_7;
     INV_SQRT_2PI * (-0.5 * x * x).exp()
@@ -10,6 +11,7 @@ pub fn norm_pdf(x: f64) -> f64 {
 
 /// Standard normal cumulative distribution function.
 /// Uses Abramowitz and Stegun approximation 26.2.17 — accurate to ~1e-7.
+#[inline]
 pub fn norm_cdf(x: f64) -> f64 {
     let a1 = 0.319_381_530;
     let a2 = -0.356_563_782;
