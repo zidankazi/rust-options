@@ -1,2 +1,7 @@
-// market-data: real-time and historical market data ingestion
-// TODO: build out in a later phase
+pub mod error;
+pub mod types;
+pub mod yahoo;
+
+pub use error::MarketDataError;
+pub use types::{OptionChainData, OptionChainEntry, SparklineData, StockQuote};
+pub use yahoo::YahooClient;

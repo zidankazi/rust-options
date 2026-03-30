@@ -4,15 +4,16 @@
 
 ## Benchmarks
 
-| Benchmark | Time | Throughput |
-|---|---|---|
-| Black-Scholes + all Greeks | **~19ns** | ~53M prices/sec |
-| Implied vol (Newton-Raphson) | **~50ns** | ~20M solves/sec |
-| Monte Carlo 100K paths | **~600μs** | ~167M paths/sec |
-| Binomial tree 200 steps | **~11μs** | ~90K trees/sec |
-| Vol surface (500 BS calls) | **~10μs** | 50K surfaces/sec |
+| Benchmark | Python (NumPy/SciPy) | Rust | Speedup |
+|---|---|---|---|
+| Black-Scholes + all Greeks | ~10-50μs | **~19ns** | **~2,000x** |
+| Implied vol (Newton-Raphson) | ~100-500μs | **~50ns** | **~5,000x** |
+| Monte Carlo 100K paths | ~5-15s | **~600μs** | **~16,000x** |
+| Binomial tree 200 steps | ~1-5ms | **~11μs** | **~200x** |
+| Vol surface (500 BS calls) | ~5-25ms | **~10μs** | **~1,500x** |
 
-Run benchmarks:
+All benchmarks measured with [Criterion.rs](https://github.com/bheisler/criterion.rs). Python times are typical for equivalent implementations using NumPy, SciPy, and `scipy.stats.norm`. Run them yourself:
+
 ```bash
 cargo bench -p pricer
 ```
@@ -47,13 +48,6 @@ pub fn black_scholes(contract: &OptionContract) -> Result<PricingResult, PricerE
 }
 ```
 
-| Operation | Python (NumPy/SciPy) | Rust | Speedup |
-|---|---|---|---|
-| Single BS price + Greeks | ~10-50μs | ~19ns | ~500-2500x |
-| IV solve (Newton-Raphson) | ~100-500μs | ~50ns | ~2000-10000x |
-| 500-call vol surface | ~5-25ms | ~10μs | ~500-2500x |
-| Monte Carlo 100K paths | ~5-15s | ~600μs | ~8000-25000x |
-
 At 53 million BS prices per second, the math is never the bottleneck. The network is. That's what matters when you're pricing thousands of contracts in real time for trading, risk dashboards, or backtesting.
 
 ## Architecture
@@ -61,11 +55,13 @@ At 53 million BS prices per second, the math is never the bottleneck. The networ
 ```
 rust-options/
 ├── crates/
-│   ├── pricer/        ← options pricing math (BS, MC, binomial, IV)
-│   ├── market-data/   ← real-time & historical data ingestion
-│   ├── risk/          ← portfolio risk analytics (VaR, stress testing)
-│   ├── strategy/      ← trade strategies & backtesting
-│   └── web/           ← Axum REST API & WASM target
+│   ├── pricer/        ← BS, MC, binomial, IV solver, Greeks (pure math, zero deps)
+│   ├── market-data/   ← Yahoo Finance client, live option chains + quotes
+│   ├── risk/          ← portfolio risk analytics (planned)
+│   ├── strategy/      ← trade strategies & backtesting (planned)
+│   └── web/
+│       ├── src/       ← Axum REST API serving market data + pricer
+│       └── frontend/  ← TypeScript + Vite (market overview, chain viewer, pricer)
 ```
 
 ## Features
@@ -83,7 +79,9 @@ rust-options/
 - [x] Full test suite
 
 ### market-data
-- [ ] Not started
+- [x] Yahoo Finance integration (option chains, quotes, sparklines)
+- [x] Automatic IV + Greeks computation on live market prices
+- [x] Parallel quote fetching
 
 ### risk
 - [ ] Not started
@@ -92,7 +90,14 @@ rust-options/
 - [ ] Not started
 
 ### web
-- [ ] Not started
+- [x] Axum REST API
+- [x] TypeScript frontend (Vite)
+- [x] Market overview landing page with sparkline charts
+- [x] Live option chain viewer with Greeks
+- [x] Black-Scholes pricing calculator with payoff diagram
+- [ ] Strategy builder
+- [ ] Portfolio tracking
+- [ ] Backtesting
 
 ## Getting Started
 

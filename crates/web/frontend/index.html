@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rust-options</title>
+    <link rel="stylesheet" href="/src/styles/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <h1>rust-options</h1>
+                <span>derivatives engine</span>
+            </div>
+            <div class="sidebar-nav">
+                <button class="nav-item active" data-page="chain">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    <span>Option Chain</span>
+                </button>
+                <button class="nav-item" data-page="calculator">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span>Pricer</span>
+                </button>
+                <button class="nav-item disabled" data-page="strategy">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span>Strategies</span>
+                </button>
+                <button class="nav-item disabled" data-page="portfolio">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    <span>Portfolio</span>
+                </button>
+                <button class="nav-item disabled" data-page="backtest">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Backtest</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div id="page-chain" class="page active">
+                <h1 class="page-title">Option Chain</h1>
+                <p class="page-subtitle">Live options data with implied volatility and Greeks</p>
+
+                <div class="search-bar">
+                    <button id="back-btn" class="btn btn-secondary" style="display: none;">← Back</button>
+                    <input type="text" id="symbol-input" class="search-input" placeholder="Enter ticker symbol (e.g. AAPL)" value="">
+                    <button id="search-btn" class="btn btn-primary">Search</button>
+                </div>
+
+                <div id="chain-stats" class="stats-row" style="display: none;"></div>
+                <div id="expiry-tabs" class="expiry-tabs" style="display: none;"></div>
+                <div id="chain-content">
+                    <div class="empty-state">
+                        <h3>Search for a ticker</h3>
+                        <p>Enter a stock symbol above to view its full option chain with implied volatility and Greeks computed in real time.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-calculator" class="page">
+                <h1 class="page-title">Options Pricer</h1>
+                <p class="page-subtitle">Black-Scholes pricing with analytical Greeks</p>
+
+                <div class="card" style="margin-bottom: 24px;">
+                    <div class="calculator-grid">
+                        <div class="input-group">
+                            <label>Spot Price (S)</label>
+                            <input type="number" id="calc-s" value="100" step="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Strike Price (K)</label>
+                            <input type="number" id="calc-k" value="100" step="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Time to Expiry (years)</label>
+                            <input type="number" id="calc-t" value="1.0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Risk-Free Rate</label>
+                            <input type="number" id="calc-r" value="0.05" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Volatility (σ)</label>
+                            <input type="number" id="calc-sigma" value="0.20" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Option Type</label>
+                            <select id="calc-type">
+                                <option value="call">Call</option>
+                                <option value="put">Put</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="calc-result" style="display: none; margin-top: 24px;">
+                        <div class="stat-card" style="margin-bottom: 16px;">
+                            <div class="stat-label">Option Price</div>
+                            <div class="stat-value" id="calc-price">—</div>
+                        </div>
+                        <div class="greeks-grid" id="calc-greeks"></div>
+                    </div>
+                </div>
+
+                <div id="payoff-stats" class="stats-row" style="display: none;"></div>
+
+                <div class="card" id="payoff-card" style="display: none;">
+                    <div class="card-header">
+                        <div class="card-title">Payoff at Expiry</div>
+                        <span style="font-size: 12px; color: var(--text-muted);">Hover to inspect</span>
+                    </div>
+                    <canvas id="payoff-chart" height="320"></canvas>
+                </div>
+            </div>
+
+            <div id="page-strategy" class="page">
+                <h1 class="page-title">Strategy Builder</h1>
+                <p class="page-subtitle">Build and analyze multi-leg option strategies</p>
+                <div class="empty-state">
+                    <h3>Coming soon</h3>
+                    <p>Build spreads, straddles, and iron condors with combined payoff diagrams and net Greeks.</p>
+                </div>
+            </div>
+
+            <div id="page-portfolio" class="page">
+                <h1 class="page-title">Portfolio</h1>
+                <p class="page-subtitle">Track positions and portfolio-level risk</p>
+                <div class="empty-state">
+                    <h3>Coming soon</h3>
+                    <p>Mark positions to market, monitor aggregate Greeks, and track P&L over time.</p>
+                </div>
+            </div>
+
+            <div id="page-backtest" class="page">
+                <h1 class="page-title">Backtesting</h1>
+                <p class="page-subtitle">Test strategies against historical data</p>
+                <div class="empty-state">
+                    <h3>Coming soon</h3>
+                    <p>Replay historical prices through the pricer engine to evaluate strategy performance.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
