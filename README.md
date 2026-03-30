@@ -17,33 +17,14 @@ Run benchmarks:
 cargo bench -p pricer
 ```
 
-### Optimization Journey
-
-The Monte Carlo engine went through several rounds of optimization, each targeting a specific bottleneck:
-
-| Optimization | MC Time | Speedup | What changed |
-|---|---|---|---|
-| Baseline | 826 ms | — | Naive implementation: step-by-step GBM, Box-Muller, wasted normals |
-| Reuse spare normals + log-space accumulation | 224 ms | 3.7x | Use both Box-Muller outputs; accumulate sums, one `exp()` per path instead of 252 |
-| Marsaglia polar method | 187 ms | 4.4x | Replace `cos()`/`sin()` with rejection sampling |
-| Closed-form GBM | **3.5 ms** | **236x** | European options don't need path stepping — one normal per path, no inner loop |
-
-**Total: 826ms → 3.5ms (236x faster).** Same math, same accuracy, same 100K paths with antithetic variates. Every optimization was verified against Black-Scholes analytical prices.
-
 ### Why Rust?
 
-The same Black-Scholes pricer in Python (using NumPy/SciPy) takes ~10-50μs per call. This Rust implementation runs in **~19ns** — roughly **500-2500x faster**.
+Most options pricing code lives in Python with NumPy and SciPy. That works for learning, but Python pays a cost on every function call, loop iteration, and memory allocation. Rust compiles down to native machine code with no garbage collector, so tight math loops run at hardware speed.
 
-| Operation | Python (NumPy) | Rust | Speedup |
-|---|---|---|---|
-| Single BS price + Greeks | ~10-50μs | ~19ns | ~500-2500x |
-| IV solve (Newton-Raphson) | ~100-500μs | ~50ns | ~2000-10000x |
-| 500-call vol surface | ~5-25ms | ~10μs | ~500-2500x |
-
-Python pricers are teaching tools. This is a production-grade engine. The difference matters when you need to price thousands of options in real time — for live trading, risk dashboards, or strategy backtesting.
+Here's the same Black-Scholes formula in both languages. Same math, same inputs:
 
 ```python
-# Python equivalent — same math, ~2000x slower
+# Python: ~10-50μs per call
 from scipy.stats import norm
 import numpy as np
 
@@ -52,6 +33,28 @@ def black_scholes(S, K, T, r, sigma):
     d2 = d1 - sigma*np.sqrt(T)
     return S*norm.cdf(d1) - K*np.exp(-r*T)*norm.cdf(d2)
 ```
+
+```rust
+// Rust: ~19ns per call (same formula, ~2000x faster)
+// Normal CDF/PDF built from scratch using Abramowitz & Stegun approximation.
+// No external math libraries, just f64 arithmetic.
+pub fn black_scholes(contract: &OptionContract) -> Result<PricingResult, PricerError> {
+    let d1 = ((contract.s / contract.k).ln()
+        + (r - q + 0.5 * sigma * sigma) * t)
+        / (sigma * t.sqrt());
+    let d2 = d1 - sigma * t.sqrt();
+    // ... price + all five Greeks in one pass
+}
+```
+
+| Operation | Python (NumPy/SciPy) | Rust | Speedup |
+|---|---|---|---|
+| Single BS price + Greeks | ~10-50μs | ~19ns | ~500-2500x |
+| IV solve (Newton-Raphson) | ~100-500μs | ~50ns | ~2000-10000x |
+| 500-call vol surface | ~5-25ms | ~10μs | ~500-2500x |
+| Monte Carlo 100K paths | ~5-15s | ~3.5ms | ~1400-4300x |
+
+At 53 million BS prices per second, the math is never the bottleneck. The network is. That's what matters when you're pricing thousands of contracts in real time for trading, risk dashboards, or backtesting.
 
 ## Architecture
 
