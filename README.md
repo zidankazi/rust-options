@@ -1,6 +1,6 @@
 # rust-options
 
-> A blazing-fast equity derivatives pricing engine written in Rust. Sub-microsecond Black-Scholes, 236x-optimized Monte Carlo, analytical Greeks, and binomial trees for American options — all from scratch with zero external math dependencies.
+> A blazing fast equity derivatives pricing engine written in Rust. Sub-microsecond Black-Scholes, 236x-optimized Monte Carlo, analytical Greeks, and binomial trees for American options — all from scratch with zero external math dependencies.
 
 ## Benchmarks
 
