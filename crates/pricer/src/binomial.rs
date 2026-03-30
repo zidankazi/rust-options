@@ -12,7 +12,7 @@ pub fn binomial_price(contract: &OptionContract, steps: usize) -> Result<Pricing
     let k = contract.k; // strike price
     let t = contract.t; // time to expiration (in years)
     let r = contract.r; // risk-free rate (annualized)
-    let q = contract.q(); // dividend yield (annualized)
+    let q = contract.q();  // dividend yield (annualized)
     let sigma = contract.sigma; // volatility (annualized)
 
     // CRR parameters — define the shape of the tree
@@ -24,32 +24,33 @@ pub fn binomial_price(contract: &OptionContract, steps: usize) -> Result<Pricing
 
     // Forward pass: compute payoffs at every possible expiry price
     // After `steps` steps there are steps+1 possible ending prices
+    let u_over_d = u * u; // u/d = u/(1/u) = u^2 — ratio between consecutive spots
     let mut values = vec![0.0; steps + 1]; // values[i] = option value at node i
-    for i in 0..=steps { 
-        let spot = s * u.powi(i as i32) * d.powi((steps - i) as i32); // spot = s * u^i * d^(n-i)
+    let mut spot = s * d.powi(steps as i32); // start at all-down: s * d^steps
+    for i in 0..=steps {
         values[i] = match contract.option_type {
             OptionType::Call => (spot - k).max(0.0), // call payoff = max(spot - strike, 0)
             OptionType::Put => (k - spot).max(0.0), // put payoff = max(strike - spot, 0)
         };
+        spot *= u_over_d; // next node's spot = previous * u/d
     }
 
     // Backward pass: work from expiry back to today, one step at a time
     for step in (0..steps).rev() { // Iterate in reverse
+        let mut spot = s * d.powi(step as i32); // start at all-down for this step
         for i in 0..=step {
             // Continuation value: discounted weighted average of up and down futures
-            values[i] = disc * (p * values[i + 1] + (1.0 - p) * values[i]); // continuation value = disc * (p * up_value + (1-p) * down_value)
+            values[i] = disc * (p * values[i + 1] + (1.0 - p) * values[i]);
 
             // American options: check if exercising now beats waiting
             if contract.exercise_style == ExerciseStyle::American {
-                // Calculate spot price (present value of the stock at this node)
-                let spot = s * u.powi(i as i32) * d.powi((step - i) as i32); // spot = s * u^i * d^(n-i)
                 let exercise = match contract.option_type {
-                    OptionType::Call => (spot - k).max(0.0), // call payoff = max(spot - strike, 0)
-                    OptionType::Put => (k - spot).max(0.0), // put payoff = max(strike - spot, 0)
+                    OptionType::Call => (spot - k).max(0.0),
+                    OptionType::Put => (k - spot).max(0.0),
                 };
-                // Take the better of exercising now or continuing to hold
-                values[i] = values[i].max(exercise); // value = max(continuation_value, exercise_value)
+                values[i] = values[i].max(exercise);
             }
+            spot *= u_over_d; // next node's spot
         }
 
         // After processing step 1, save the two values needed for delta before they get overwritten on the final iteration

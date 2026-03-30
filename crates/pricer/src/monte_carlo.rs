@@ -16,9 +16,8 @@ fn simulate_price(contract: &OptionContract, config: &MonteCarloConfig) -> f64 {
     let q = contract.q(); // dividend yield (annualized)
     let sigma = contract.sigma; // volatility (annualized)
 
-    let dt = t / config.num_steps as f64; // time per step
-    let drift = (r - q - 0.5 * sigma * sigma) * dt; // deterministic drift per step
-    let vol_step = sigma * dt.sqrt(); // volatility scaling per step
+    let drift = (r - q - 0.5 * sigma * sigma) * t; // total drift over full time horizon
+    let vol_sqrt_t = sigma * t.sqrt(); // volatility scaled by sqrt(T)
     let discount = (-r * t).exp(); // discount factor
 
     let seed = config.seed.unwrap_or(12345);
@@ -26,15 +25,11 @@ fn simulate_price(contract: &OptionContract, config: &MonteCarloConfig) -> f64 {
     let mut total_payoff = 0.0;
 
     for _ in 0..(config.num_paths / 2) {
-        let mut s1 = s; // normal path (uses Z)
-        let mut s2 = s; // antithetic path (uses -Z)
+        // One normal per path — no inner loop needed for European options
+        let (z1, _) = rng.next_normal_pair();
 
-        // Simulate GBM path (Geometric Brownian Motion)
-        for _ in 0..config.num_steps {
-            let (z, _) = rng.next_normal_pair();
-            s1 *= (drift + vol_step * z).exp();
-            s2 *= (drift - vol_step * z).exp();
-        }
+        let s1 = s * (drift + vol_sqrt_t * z1).exp();
+        let s2 = s * (drift - vol_sqrt_t * z1).exp();
 
         // Calculate payoff for both paths
         let payoff1 = match contract.option_type {

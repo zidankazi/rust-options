@@ -1,32 +1,43 @@
 # rust-options
 
-> A blazing fast equity derivatives pricing engine written in Rust. Sub-microsecond Black-Scholes, massively parallel Monte Carlo, real-time Greeks, and a full trading simulator with strategy backtesting and PnL tracking.
+> A blazing-fast equity derivatives pricing engine written in Rust. Sub-microsecond Black-Scholes, 236x-optimized Monte Carlo, analytical Greeks, and binomial trees for American options — all from scratch with zero external math dependencies.
 
 ## Benchmarks
 
-| Benchmark | Time |
-|---|---|
-| Black-Scholes + all Greeks | **~20ns** |
-| Implied vol (Newton-Raphson) | **~52ns** |
-| Monte Carlo 100K paths | ~855ms* |
-| Binomial tree 200 steps | **~12μs** |
-| Vol surface (500 BS calls) | **~10μs** |
-
-*MC includes 3x simulation for bump-and-reprice delta. Price-only is ~285ms.
+| Benchmark | Time | Throughput |
+|---|---|---|
+| Black-Scholes + all Greeks | **~19ns** | ~53M prices/sec |
+| Implied vol (Newton-Raphson) | **~50ns** | ~20M solves/sec |
+| Monte Carlo 100K paths | **~3.5ms** | ~29M paths/sec |
+| Binomial tree 200 steps | **~11μs** | ~90K trees/sec |
+| Vol surface (500 BS calls) | **~10μs** | 50K surfaces/sec |
 
 Run benchmarks:
 ```bash
 cargo bench -p pricer
 ```
 
+### Optimization Journey
+
+The Monte Carlo engine went through several rounds of optimization, each targeting a specific bottleneck:
+
+| Optimization | MC Time | Speedup | What changed |
+|---|---|---|---|
+| Baseline | 826 ms | — | Naive implementation: step-by-step GBM, Box-Muller, wasted normals |
+| Reuse spare normals + log-space accumulation | 224 ms | 3.7x | Use both Box-Muller outputs; accumulate sums, one `exp()` per path instead of 252 |
+| Marsaglia polar method | 187 ms | 4.4x | Replace `cos()`/`sin()` with rejection sampling |
+| Closed-form GBM | **3.5 ms** | **236x** | European options don't need path stepping — one normal per path, no inner loop |
+
+**Total: 826ms → 3.5ms (236x faster).** Same math, same accuracy, same 100K paths with antithetic variates. Every optimization was verified against Black-Scholes analytical prices.
+
 ### Why Rust?
 
-The same Black-Scholes pricer in Python (using NumPy/SciPy) takes ~10-50μs per call. This Rust implementation runs in **~20ns** — roughly **500-2500x faster**.
+The same Black-Scholes pricer in Python (using NumPy/SciPy) takes ~10-50μs per call. This Rust implementation runs in **~19ns** — roughly **500-2500x faster**.
 
 | Operation | Python (NumPy) | Rust | Speedup |
 |---|---|---|---|
-| Single BS price + Greeks | ~10-50μs | ~20ns | ~500-2500x |
-| IV solve (Newton-Raphson) | ~100-500μs | ~52ns | ~2000-10000x |
+| Single BS price + Greeks | ~10-50μs | ~19ns | ~500-2500x |
+| IV solve (Newton-Raphson) | ~100-500μs | ~50ns | ~2000-10000x |
 | 500-call vol surface | ~5-25ms | ~10μs | ~500-2500x |
 
 Python pricers are teaching tools. This is a production-grade engine. The difference matters when you need to price thousands of options in real time — for live trading, risk dashboards, or strategy backtesting.
@@ -59,7 +70,7 @@ rust-options/
 ### pricer
 - [x] Project scaffolding & types
 - [x] Normal CDF/PDF (Abramowitz & Stegun)
-- [x] xorshift64 PRNG + Box-Muller
+- [x] xorshift64 PRNG + Marsaglia polar method
 - [x] Black-Scholes pricing (European, Merton extension)
 - [x] Analytical Greeks (delta, gamma, theta, vega, rho)
 - [x] Implied volatility solver (Newton-Raphson + bisection)

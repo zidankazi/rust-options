@@ -2,8 +2,6 @@
 // xorshift64 PRNG + Box-Muller transform for normal variates.
 // No rand crate dependency.
 
-use std::f64::consts::TAU; // TAU = 2*pi
-
 // xorshift64: a fast PRNG that's just three XOR-shift operations on a 64-bit state.
 // Not cryptographically secure, but random enough for Monte Carlo.
 pub struct Xorshift64 {
@@ -35,14 +33,19 @@ impl Xorshift64 {
         (self.next_u64() as f64) / (u64::MAX as f64)
     }
 
-    // Box-Muller transform: turns two uniform randoms into two standard normals.
+    // Marsaglia polar method: turns uniform randoms into two standard normals.
+    // Like Box-Muller but replaces cos/sin with rejection sampling — faster.
     // Returns a pair (z1, z2) — both are independent N(0,1) samples.
     pub fn next_normal_pair(&mut self) -> (f64, f64) {
-        let u1 = self.next_f64();
-        let u2 = self.next_f64();
-        let r = (-2.0 * u1.ln()).sqrt();
-        let theta = TAU * u2;
-        (r * theta.cos(), r * theta.sin())
+        loop {
+            let u1 = 2.0 * self.next_f64() - 1.0; // uniform in (-1, 1)
+            let u2 = 2.0 * self.next_f64() - 1.0; // uniform in (-1, 1)
+            let s = u1 * u1 + u2 * u2; // sum of squares
+            if s > 0.0 && s < 1.0 { // if s is in (0, 1), accept the pair
+                let factor = (-2.0 * s.ln() / s).sqrt(); 
+                return (u1 * factor, u2 * factor);
+            }
+        }
     }
 }
 
