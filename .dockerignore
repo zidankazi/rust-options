@@ -1,0 +1,7 @@
+target/
+node_modules/
+crates/web/static/
+.git/
+tracker.txt
+CLAUDE.md
+.DS_Store

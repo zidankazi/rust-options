@@ -24,7 +24,9 @@ async fn main() {
         .fallback_service(ServeDir::new("crates/web/static"))
         .with_state(state);
 
-    println!("Server running at http://localhost:3000");
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".into());
+    let addr = format!("0.0.0.0:{}", port);
+    println!("Server running at http://localhost:{}", port);
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
