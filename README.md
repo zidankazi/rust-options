@@ -6,11 +6,13 @@
 
 | Benchmark | Target | Actual |
 |---|---|---|
-| Black-Scholes + all Greeks | ~150ns | — |
-| Implied vol (Newton-Raphson) | ~800ns | — |
-| Monte Carlo 100K paths | ~12ms | — |
-| Binomial tree 200 steps | ~50us | — |
-| Vol surface (500 BS calls) | ~75us | — |
+| Black-Scholes + all Greeks | ~150ns | **~20ns** |
+| Implied vol (Newton-Raphson) | ~800ns | **~52ns** |
+| Monte Carlo 100K paths | ~12ms | ~855ms* |
+| Binomial tree 200 steps | ~50μs | **~12μs** |
+| Vol surface (500 BS calls) | ~75μs | **~10μs** |
+
+*MC includes 3x simulation for bump-and-reprice delta. Price-only is ~285ms.
 
 Run benchmarks:
 ```bash
@@ -40,8 +42,8 @@ rust-options/
 - [x] Implied volatility solver (Newton-Raphson + bisection)
 - [x] Monte Carlo engine (GBM, antithetic variates)
 - [x] Binomial tree (CRR, American options)
-- [ ] Benchmarks
-- [ ] Full test suite
+- [x] Benchmarks
+- [x] Full test suite
 
 ### market-data
 - [ ] Not started
