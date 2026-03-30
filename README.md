@@ -39,7 +39,7 @@ rust-options/
 - [x] Analytical Greeks (delta, gamma, theta, vega, rho)
 - [x] Implied volatility solver (Newton-Raphson + bisection)
 - [x] Monte Carlo engine (GBM, antithetic variates)
-- [ ] Binomial tree (CRR, American options)
+- [x] Binomial tree (CRR, American options)
 - [ ] Benchmarks
 - [ ] Full test suite
 
