@@ -6,8 +6,7 @@ use crate::normal::{norm_cdf as cdf, norm_pdf as pdf};
 use crate::types::{OptionContract, OptionType, PricingResult};
 
 // Validates contract inputs before pricing.
-// Rejects nonsensical values (negative prices, zero time, etc.) that would -
-// - produce NaN/Inf in the formulas rather than meaningful results.
+// Rejects nonsensical values (negative prices, zero time, etc.) that would produce NaN/Inf in the formulas
 fn validate(contract: &OptionContract) -> Result<(), PricerError> {
     if contract.s <= 0.0 {
         return Err(PricerError::InvalidInput(
@@ -48,12 +47,12 @@ fn validate(contract: &OptionContract) -> Result<(), PricerError> {
 pub fn black_scholes(contract: &OptionContract) -> Result<PricingResult, PricerError> {
     validate(contract)?;
 
-    let s = contract.s;
-    let k = contract.k;
-    let t = contract.t;
-    let r = contract.r;
-    let q = contract.q(); // must use .q() since q is an Option<f64>, not an f64, so the value must be safely unwrapped
-    let sigma = contract.sigma;
+    let s = contract.s; // initial stock price
+    let k = contract.k; // strike price
+    let t = contract.t; // time to expiration (in years)
+    let r = contract.r; // risk-free rate (annualized)
+    let q = contract.q(); // dividend yield (annualized)
+    let sigma = contract.sigma; // volatility (annualized)
 
     // d1: how many std devs (spread) the stock is above the strike, adjusted for drift and time
     let d1 = ((s / k).ln() + (r - q + 0.5 * sigma * sigma) * t) / (sigma * t.sqrt());

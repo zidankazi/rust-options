@@ -9,12 +9,12 @@ use crate::rng::Xorshift64;
 // Runs the core MC simulation and returns just the price, no Greeks.
 // Separated so bump-and-reprice can call it without infinite recursion.
 fn simulate_price(contract: &OptionContract, config: &MonteCarloConfig) -> f64 {
-    let s = contract.s;
-    let k = contract.k;
-    let t = contract.t;
-    let r = contract.r;
-    let q = contract.q();
-    let sigma = contract.sigma;
+    let s = contract.s; // initial stock price
+    let k = contract.k; // strike price
+    let t = contract.t; // time to expiration (in years)
+    let r = contract.r; // risk-free rate (annualized)
+    let q = contract.q(); // dividend yield (annualized)
+    let sigma = contract.sigma; // volatility (annualized)
 
     let dt = t / config.num_steps as f64; // time per step
     let drift = (r - q - 0.5 * sigma * sigma) * dt; // deterministic drift per step

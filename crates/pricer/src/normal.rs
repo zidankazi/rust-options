@@ -1,6 +1,6 @@
 // Standard normal PDF and CDF from scratch.
 // CDF uses the Abramowitz and Stegun approximation.
-
+    
 /// Standard normal probability density function.
 /// n(x) = (1/sqrt(2*pi)) * exp(-x^2/2)
 pub fn norm_pdf(x: f64) -> f64 {
