@@ -5,6 +5,7 @@
 use crate::types::{MonteCarloConfig, OptionContract, OptionType, PricingResult};
 use crate::error::PricerError;
 use crate::rng::Xorshift64;
+use rayon::prelude::*;
 
 // Runs the core MC simulation and returns just the price, no Greeks.
 // Separated so bump-and-reprice can call it without infinite recursion.
@@ -20,32 +21,32 @@ fn simulate_price(contract: &OptionContract, config: &MonteCarloConfig) -> f64 {
     let vol_sqrt_t = sigma * t.sqrt(); // volatility scaled by sqrt(T)
     let discount = (-r * t).exp(); // discount factor
 
-    let seed = config.seed.unwrap_or(12345);
-    let mut rng = Xorshift64::new(seed);
-    let mut total_payoff = 0.0;
+    let seed = config.seed.unwrap_or(12345); // seed for reproducibility
+    let num_pairs = config.num_paths / 2; // number of pairs of paths
 
-    for _ in 0..(config.num_paths / 2) {
-        // One normal per path — no inner loop needed for European options
-        let (z1, _) = rng.next_normal_pair();
+    let total_payoff: f64 = (0..num_pairs) // iterate over pairs of paths
+        .into_par_iter() // parallel iteration
+        .map(|i| {
+            let mut rng = Xorshift64::new(seed + i as u64); // create new PRNG for each pair
+            let (z1, _) = rng.next_normal_pair(); // generate pair of standard normals
 
-        let s1 = s * (drift + vol_sqrt_t * z1).exp();
-        let s2 = s * (drift - vol_sqrt_t * z1).exp();
+            let s1 = s * (drift + vol_sqrt_t * z1).exp(); // simulate path 1
+            let s2 = s * (drift - vol_sqrt_t * z1).exp(); // simulate path 2
 
-        // Calculate payoff for both paths
-        let payoff1 = match contract.option_type {
-            OptionType::Call => (s1 - k).max(0.0),
-            OptionType::Put => (k - s1).max(0.0),
-        };
-        let payoff2 = match contract.option_type {
-            OptionType::Call => (s2 - k).max(0.0),
-            OptionType::Put => (k - s2).max(0.0),
-        };
+            let payoff1 = match contract.option_type {
+                OptionType::Call => (s1 - k).max(0.0), // call payoff (S - K) if S > K else 0
+                OptionType::Put => (k - s1).max(0.0), // put payoff (K - S) if K > S else 0
+            };
+            let payoff2 = match contract.option_type {
+                OptionType::Call => (s2 - k).max(0.0), // call payoff (S - K) if S > K else 0
+                OptionType::Put => (k - s2).max(0.0), // put payoff (K - S) if K > S else 0
+            };
 
-        total_payoff += (payoff1 + payoff2) / 2.0;
-    }
+            (payoff1 + payoff2) / 2.0 // average payoff of the pair
+        })
+        .sum();
 
-    let num_pairs = (config.num_paths / 2) as f64;
-    discount * total_payoff / num_pairs
+    discount * total_payoff / num_pairs as f64 // discount the average payoff
 }
 
 // Monte Carlo pricer — simulates the price, then computes delta via bump-and-reprice.
@@ -138,7 +139,8 @@ mod tests {
         assert!(mc.delta > 0.4 && mc.delta < 0.8);
     }
 
-    // Same seed = same result. Different seed = different result.
+    // Same seed should give very close results. Not bit-exact because
+    // parallel summation order can vary, but within floating-point noise.
     #[test]
     fn reproducible_with_seed() {
         let contract = test_contract(OptionType::Call);
@@ -149,6 +151,6 @@ mod tests {
         };
         let a = monte_carlo_price(&contract, &config).unwrap().price;
         let b = monte_carlo_price(&contract, &config).unwrap().price;
-        assert_eq!(a, b);
+        assert!((a - b).abs() < 1e-10);
     }
 }

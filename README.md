@@ -1,6 +1,6 @@
 # rust-options
 
-> A blazing fast equity derivatives pricing engine written in Rust. Sub-microsecond Black-Scholes, 236x-optimized Monte Carlo, analytical Greeks, and binomial trees for American options — all from scratch with zero external math dependencies.
+> A blazing-fast equity derivatives pricing engine written in Rust. Sub-microsecond Black-Scholes, 1,370x-optimized parallel Monte Carlo, analytical Greeks, and binomial trees for American options. All math from scratch with zero external math dependencies.
 
 ## Benchmarks
 
@@ -8,7 +8,7 @@
 |---|---|---|
 | Black-Scholes + all Greeks | **~19ns** | ~53M prices/sec |
 | Implied vol (Newton-Raphson) | **~50ns** | ~20M solves/sec |
-| Monte Carlo 100K paths | **~3.5ms** | ~29M paths/sec |
+| Monte Carlo 100K paths | **~600μs** | ~167M paths/sec |
 | Binomial tree 200 steps | **~11μs** | ~90K trees/sec |
 | Vol surface (500 BS calls) | **~10μs** | 50K surfaces/sec |
 
@@ -52,7 +52,7 @@ pub fn black_scholes(contract: &OptionContract) -> Result<PricingResult, PricerE
 | Single BS price + Greeks | ~10-50μs | ~19ns | ~500-2500x |
 | IV solve (Newton-Raphson) | ~100-500μs | ~50ns | ~2000-10000x |
 | 500-call vol surface | ~5-25ms | ~10μs | ~500-2500x |
-| Monte Carlo 100K paths | ~5-15s | ~3.5ms | ~1400-4300x |
+| Monte Carlo 100K paths | ~5-15s | ~600μs | ~8000-25000x |
 
 At 53 million BS prices per second, the math is never the bottleneck. The network is. That's what matters when you're pricing thousands of contracts in real time for trading, risk dashboards, or backtesting.
 
