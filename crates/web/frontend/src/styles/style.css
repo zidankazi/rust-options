@@ -813,6 +813,21 @@ tr.itm:hover {
     justify-content: center;
 }
 
+.strike-filter-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 4px 0;
+    transition: color var(--transition);
+}
+
+.strike-filter-btn:hover {
+    color: var(--accent);
+}
+
 /* ============================================
    PAGE VIEWS
    ============================================ */

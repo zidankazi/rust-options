@@ -3,6 +3,9 @@ import type { OptionChainEntry, StockQuote, SparklineData } from '../types';
 import { $, formatNum, showLoading } from '../utils';
 
 let currentSymbol = '';
+let currentSpot = 0;
+let currentEntries: OptionChainEntry[] = [];
+let showAllStrikes = false;
 
 const INDICES = ['SPY', 'QQQ', 'DIA', 'IWM'];
 const SECTORS: Record<string, string[]> = {
@@ -315,9 +318,12 @@ function renderExpiryDropdown(expirations: number[]): void {
 
 async function loadExpiry(expiry: number): Promise<void> {
   showLoading('chain-content');
+  showAllStrikes = false;
   try {
     const data = await fetchChain(currentSymbol, expiry);
-    renderChainTable(data.entries);
+    currentSpot = data.spot_price;
+    currentEntries = data.entries;
+    renderChainTable();
   } catch (err) {
     $('chain-content').innerHTML =
       `<div class="empty-state"><h3>Error</h3><p>${(err as Error).message}</p></div>`;
@@ -339,17 +345,33 @@ const TABLE_HEADERS = `
   </tr>
 `;
 
-function renderChainTable(entries: OptionChainEntry[]): void {
-  const calls = entries.filter(e => e.option_type === 'Call');
-  const puts = entries.filter(e => e.option_type === 'Put');
+function renderChainTable(): void {
   const content = $('chain-content');
 
-  if (entries.length === 0) {
+  if (currentEntries.length === 0) {
     content.innerHTML = '<div class="empty-state"><h3>No contracts</h3><p>No option contracts found for this expiration.</p></div>';
     return;
   }
 
+  const filtered = showAllStrikes
+    ? currentEntries
+    : currentEntries.filter(e => {
+        const pct = Math.abs(e.strike - currentSpot) / currentSpot;
+        return pct <= 0.20;
+      });
+
+  const hiddenCount = currentEntries.length - filtered.length;
+  const calls = filtered.filter(e => e.option_type === 'Call');
+  const puts = filtered.filter(e => e.option_type === 'Put');
+
+  const toggleText = showAllStrikes
+    ? `Show near-the-money only`
+    : `Show all strikes (+${hiddenCount} hidden)`;
+
   content.innerHTML = `
+    <div style="margin-bottom: 10px;">
+      <button class="strike-filter-btn" id="toggle-strikes">${toggleText}</button>
+    </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
       <div>
         <div class="section-title">Calls</div>
@@ -371,6 +393,11 @@ function renderChainTable(entries: OptionChainEntry[]): void {
       </div>
     </div>
   `;
+
+  $('toggle-strikes').addEventListener('click', () => {
+    showAllStrikes = !showAllStrikes;
+    renderChainTable();
+  });
 }
 
 function contractRow(c: OptionChainEntry): string {
