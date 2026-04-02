@@ -4,14 +4,21 @@ version = "0.1.0"
 edition = "2021"
 description = "Blazing-fast equity derivatives pricing engine — Black-Scholes, Monte Carlo, binomial trees"
 
+[lib]
+crate-type = ["cdylib", "rlib"]  # cdylib = WASM output, rlib = normal Rust dependency
+
 [features]
-wasm = ["dep:wasm-bindgen"]
+wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen"]
 
 [dependencies]
 thiserror = "2"
-rayon = "1"
 serde = { version = "1", features = ["derive"] }
 wasm-bindgen = { version = "0.2", optional = true }
+serde-wasm-bindgen = { version = "0.6", optional = true }
+
+# rayon uses OS threads — doesn't compile for wasm32, so we only pull it in on native targets
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+rayon = "1"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }

@@ -42,8 +42,7 @@ fn validate(contract: &OptionContract) -> Result<(), PricerError> {
     Ok(())
 }
 
-// Computes price and all Greeks in one pass, reusing intermediate values.
-// This is the main entry point for Black-Scholes pricing.
+// 
 pub fn black_scholes(contract: &OptionContract) -> Result<PricingResult, PricerError> {
     validate(contract)?;
 
