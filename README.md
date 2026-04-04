@@ -1,6 +1,6 @@
 # rust-options
 
-> A blazing-fast equity derivatives pricing engine written in Rust. Sub-microsecond Black-Scholes, 1,370x-optimized parallel Monte Carlo, analytical Greeks, and binomial trees for American options. All math from scratch with zero external math dependencies.
+> A blazing-fast equity derivatives pricing engine written in Rust. Sub-microsecond Black-Scholes, 1,370x-optimized parallel Monte Carlo, analytical Greeks, binomial trees for American options, and SVI vol surface calibration. All math from scratch with zero external math dependencies.
 
 ## Benchmarks
 
@@ -55,10 +55,11 @@ At 53 million BS prices per second, the math is never the bottleneck. The networ
 ```
 rust-options/
 ├── crates/
-│   ├── pricer/        ← BS, MC, binomial, IV solver, Greeks (pure math, zero deps)
+│   ├── pricer/        ← BS, MC, binomial, IV solver, SVI calibration, Greeks (pure math, zero deps)
 │   ├── market-data/   ← Yahoo Finance client, live option chains + quotes
 │   ├── risk/          ← portfolio risk analytics (planned)
 │   ├── strategy/      ← trade strategies & backtesting (planned)
+│   ├── vol-model/     ← TFT-based vol surface predictor via ONNX (planned)
 │   └── web/
 │       ├── src/       ← Axum REST API serving market data + pricer
 │       └── frontend/  ← TypeScript + Vite (market overview, chain viewer, pricer)
@@ -75,6 +76,7 @@ rust-options/
 - [x] Implied volatility solver (Newton-Raphson + bisection)
 - [x] Monte Carlo engine (GBM, antithetic variates)
 - [x] Binomial tree (CRR, American options)
+- [x] SVI vol smile calibration (Nelder-Mead optimizer)
 - [x] Benchmarks
 - [x] Full test suite
 
@@ -82,6 +84,12 @@ rust-options/
 - [x] Yahoo Finance integration (option chains, quotes, sparklines)
 - [x] Automatic IV + Greeks computation on live market prices
 - [x] Parallel quote fetching
+
+### vol-model (planned)
+- [ ] Historical option chain data pipeline (Polygon.io)
+- [ ] SVI calibration on historical data for training labels
+- [ ] Temporal Fusion Transformer (PyTorch)
+- [ ] ONNX export + Rust inference via `ort`
 
 ### risk
 - [ ] Not started
