@@ -5,6 +5,7 @@ pub mod rng;
 pub mod black_scholes;
 pub mod implied_volatility;
 pub mod binomial;
+pub mod svi;
 // pub mod heston; // uncomment when heston.rs is finished
 
 // Monte Carlo uses rayon (OS threads) which doesn't exist in WASM.
