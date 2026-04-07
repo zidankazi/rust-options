@@ -85,11 +85,13 @@ rust-options/
 - [x] Automatic IV + Greeks computation on live market prices
 - [x] Parallel quote fetching
 
-### vol-model (planned)
-- [ ] Historical option chain data pipeline (Polygon.io)
-- [ ] SVI calibration on historical data for training labels
-- [ ] Temporal Fusion Transformer (PyTorch)
-- [ ] ONNX export + Rust inference via `ort`
+### vol-model (in progress)
+- [x] Historical option chain data pipeline (Massive.com / Polygon.io)
+- [x] SVI calibration on historical data for training labels
+- [x] Transformer encoder for SVI parameter prediction (PyTorch)
+- [x] ONNX export with roundtrip verification
+- [ ] Rust inference via `ort` crate
+- [ ] Web API integration
 
 ### risk
 - [ ] Not started

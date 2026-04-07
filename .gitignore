@@ -21,6 +21,7 @@ Thumbs.db
 # Raw data files (large, fetched locally)
 data/raw/
 data/.venv/
+data/vol_model/__pycache__/
 
 # Node
 node_modules/
