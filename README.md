@@ -1,6 +1,6 @@
 # rust-options
 
-> A blazing-fast equity derivatives pricing engine written in Rust with a transformer-based vol surface predictor. Sub-microsecond Black-Scholes, 1,370x-optimized parallel Monte Carlo, analytical Greeks, binomial trees for American options, SVI vol smile calibration, and a PyTorch-trained transformer loaded from ONNX that predicts SVI parameters directly from market history. All pricing math from scratch with zero external math dependencies.
+> A blazing fast equity derivatives pricing engine written in Rust with a transformer-based vol surface predictor. Sub-microsecond Black-Scholes, 1,370x-optimized parallel Monte Carlo, analytical Greeks, binomial trees for American options, SVI vol smile calibration, and a PyTorch-trained transformer loaded from ONNX that predicts SVI parameters directly from market history. All pricing math from scratch with zero external math dependencies.
 
 ## Benchmarks
 
