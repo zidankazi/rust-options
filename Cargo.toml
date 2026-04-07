@@ -4,6 +4,7 @@ members = [
     "crates/market-data",
     "crates/risk",
     "crates/strategy",
+    "crates/vol-model",
     "crates/web",
 ]
 resolver = "2"

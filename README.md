@@ -1,6 +1,6 @@
 # rust-options
 
-> A blazing-fast equity derivatives pricing engine written in Rust. Sub-microsecond Black-Scholes, 1,370x-optimized parallel Monte Carlo, analytical Greeks, binomial trees for American options, and SVI vol surface calibration. All math from scratch with zero external math dependencies.
+> A blazing-fast equity derivatives pricing engine written in Rust with a transformer-based vol surface predictor. Sub-microsecond Black-Scholes, 1,370x-optimized parallel Monte Carlo, analytical Greeks, binomial trees for American options, SVI vol smile calibration, and a PyTorch-trained transformer loaded from ONNX that predicts SVI parameters directly from market history. All pricing math from scratch with zero external math dependencies.
 
 ## Benchmarks
 
@@ -59,7 +59,7 @@ rust-options/
 │   ├── market-data/   ← Yahoo Finance client, live option chains + quotes
 │   ├── risk/          ← portfolio risk analytics (planned)
 │   ├── strategy/      ← trade strategies & backtesting (planned)
-│   ├── vol-model/     ← TFT-based vol surface predictor via ONNX (planned)
+│   ├── vol-model/     ← transformer-based vol surface predictor via ONNX Runtime
 │   └── web/
 │       ├── src/       ← Axum REST API serving market data + pricer
 │       └── frontend/  ← TypeScript + Vite (market overview, chain viewer, pricer)
@@ -85,12 +85,12 @@ rust-options/
 - [x] Automatic IV + Greeks computation on live market prices
 - [x] Parallel quote fetching
 
-### vol-model (in progress)
+### vol-model
 - [x] Historical option chain data pipeline (Massive.com / Polygon.io)
 - [x] SVI calibration on historical data for training labels
 - [x] Transformer encoder for SVI parameter prediction (PyTorch)
 - [x] ONNX export with roundtrip verification
-- [ ] Rust inference via `ort` crate
+- [x] Rust inference via `ort` crate — end-to-end ONNX → Rust → pricer::svi
 - [ ] Web API integration
 
 ### risk
