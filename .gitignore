@@ -18,6 +18,10 @@ Thumbs.db
 .env
 .env.local
 
+# Raw data files (large, fetched locally)
+data/raw/
+data/.venv/
+
 # Node
 node_modules/
 crates/web/frontend/dist/
